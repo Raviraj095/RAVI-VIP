@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔥 RAVI VIP PREDICTOR 🔥</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #000000;
+      color: #ff4d4d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background: #111;
+      border: 2px solid #ff4d4d;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 77, 77, 0.4);
+      padding: 25px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1, h2 {
+      font-size: 26px;
+      color: #ff4d4d;
+      margin-bottom: 20px;
+      text-shadow: 0 0 5px red;
+    }
+
+    .login-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    input[type="password"] {
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #ff6666;
+      font-size: 16px;
+      text-align: center;
+      background: #1a1a1a;
+      color: #ff4d4d;
+      outline: none;
+    }
+
+    button {
+      padding: 14px;
+      background-color: #ff1a1a;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 0 10px red;
+      transition: 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #e60000;
+    }
+
+    .top-boxes {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .square-box {
+      flex: 1;
+      background: #1a1a1a;
+      border: 2px solid #ff4d4d;
+      border-radius: 16px;
+      padding: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #ff4d4d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+    }
+
+    .signal-box {
+      background: #1a1a1a;
+      border: 2px solid #ff4d4d;
+      font-size: 18px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 18px;
+      box-shadow: 0 0 8px rgba(255, 77, 77, 0.4);
+      color: #ff6666;
+    }
+
+    .timer {
+      font-size: 15px;
+      color: #ff4d4d;
+      font-weight: bold;
+      margin-top: 10px;
+      text-shadow: 0 0 3px red;
+    }
+
+    .history {
+      max-height: 300px;
+      overflow-y: auto;
+      background: #0d0d0d;
+      border: 1px solid #ff4d4d;
+      padding: 12px;
+      border-radius: 12px;
+      width: 100%;
+    }
+
+    .history-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-item {
+      font-size: 16px;
+      color: #ff4d4d;
+      font-weight: bold;
+      text-align: left;
+      border-bottom: 1px dashed #ff6666;
+      padding-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Box -->
+  <div class="container" id="loginContainer">
+    <h1>🔐 RAVI VIP LOGIN</h1>
+    <div class="login-box">
+      <input type="password" id="passwordInput" placeholder="Enter VIP Password">
+      <button onclick="handleLogin()">Login</button>
+    </div>
+  </div>
+
+  <!-- Predictor Panel -->
+  <div class="container" id="predictorContainer" style="display: none;">
+    <h1>🔥 RAVI VIP PREDICTOR 🔥</h1>
+
+    <div class="signal-box" id="signalBox">
+      Period: -- <br> Signal: --
+    </div>
+
+    <div class="top-boxes">
+      <div class="square-box" id="box1">--</div>
+      <div class="square-box" id="box2">--</div>
+    </div>
+
+    <div class="timer" id="countdown">⏳ Next update in: --s</div>
+  </div>
+
+  <!-- History Panel -->
+  <div class="container" id="historyContainer" style="display: none;">
+    <h2>📜 Prediction History</h2>
+    <div class="history">
+      <div class="history-grid" id="historyList"></div>
+    </div>
+  </div>
+
+  <script>
+    const CORRECT_PASSWORD = "V2";
+    let lastPeriod = null;
+    let lastSignal = null;
+    let winStreak = 0;
+    let lossRecovery = false;
+    let lastUpdateTime = Date.now();
+
+    function handleLogin() {
+      const input = document.getElementById("passwordInput").value;
+      if (input === CORRECT_PASSWORD) {
+        document.getElementById("loginContainer").style.display = "none";
+        document.getElementById("predictorContainer").style.display = "block";
+        document.getElementById("historyContainer").style.display = "block";
+        startPredictor();
+      } else {
+        alert("Wrong password!");
+      }
+    }
+
+    async function fetchPeriod() {
+      try {
+        const res = await fetch('https://api.bdg88zf.com/api/webapi/GetGameIssue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            typeId: 1,
+            language: 0,
+            random: "40079dcba93a48769c6ee9d4d4fae23f",
+            signature: "D12108C4F57C549D82B23A91E0FA20AE",
+            timestamp: Math.floor(Date.now() / 1000)
+          })
+        });
+        const data = await res.json();
+        return data?.data?.issueNumber || 'Unknown';
+      } catch {
+        return 'Error';
+      }
+    }
+
+    function getSmartNumbers(signal) {
+      const small = getRandomFromRange(0, 4);
+      const big = getRandomFromRange(5, 9);
+      return signal === "Big" ? [small, big] : [big, small];
+    }
+
+    function getRandomFromRange(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function addToHistory(period, signal, n1, n2) {
+      const list = document.getElementById("historyList");
+      const item = document.createElement("div");
+      item.className = "history-item";
+      item.textContent = `#${period} • ${signal} → ${n1}, ${n2}`;
+      list.prepend(item);
+    }
+
+    async function updatePrediction() {
+      const currentPeriod = await fetchPeriod();
+      if (currentPeriod === 'Error' || currentPeriod === lastPeriod) return;
+
+      lastPeriod = currentPeriod;
+      lastUpdateTime = Date.now();
+
+      let signal;
+      if (lossRecovery) {
+        signal = lastSignal === "Big" ? "Small" : "Big";
+        lossRecovery = false;
+        winStreak = 1;
+      } else if (winStreak >= getRandomFromRange(10, 15)) {
+        signal = lastSignal === "Big" ? "Small" : "Big";
+        lossRecovery = true;
+        winStreak = 0;
+      } else {
+        signal = Math.random() > 0.5 ? "Big" : "Small";
+        winStreak++;
+      }
+
+      lastSignal = signal;
+
+      const [num1, num2] = getSmartNumbers(signal);
+
+      document.getElementById("box1").textContent = num1;
+      document.getElementById("box2").textContent = num2;
+      document.getElementById("signalBox").innerHTML = `Period: ${currentPeriod} <br> Signal: ${signal}`;
+
+      addToHistory(currentPeriod, signal, num1, num2);
+    }
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - lastUpdateTime) / 1000);
+      const remaining = 60 - (elapsed % 60);
+      document.getElementById("countdown").innerText = `⏳ Next update in: ${remaining}s`;
+    }
+
+    function startPredictor() {
+      updatePrediction();
+      setInterval(updatePrediction, 5000);
+      setInterval(updateTimer, 1000);
+    }
+  </script>
+
+</body>
+</html>

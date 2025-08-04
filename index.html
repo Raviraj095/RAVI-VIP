@@ -3,18 +3,60 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🔥 RAVI VIP PREDICTOR 🔥</title>
+  <title>🔥 RAVI VIP SYSTEM 🔥</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <style>
     body {
       margin: 0;
-      padding: 20px;
       font-family: 'Segoe UI', sans-serif;
-      background: #000;
+      background: #000000;
       color: #ff4d4d;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 20px;
     }
+
+    .box {
+      background: #111;
+      padding: 25px;
+      border-radius: 12px;
+      border: 2px solid #ff4d4d;
+      box-shadow: 0 0 12px rgba(255,77,77,0.4);
+      margin: 10px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    input, button {
+      padding: 12px;
+      width: 100%;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      background: #ff4d4d;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    #adminPanel, #dashboard, #adminControls {
+      display: none;
+    }
+
+    .keyItem {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #ff6666;
+      padding: 5px 0;
+    }
+
+    /* Predictor Styles */
     .container {
       background: #111;
       border: 2px solid #ff4d4d;
@@ -26,204 +68,298 @@
       text-align: center;
       margin-bottom: 20px;
     }
-    h1 {
+
+    h1, h2 {
       font-size: 26px;
+      color: #ff4d4d;
       margin-bottom: 20px;
       text-shadow: 0 0 5px red;
     }
-    .login-box, .admin-box {
+
+    .top-boxes {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .square-box {
+      flex: 1;
+      background: #1a1a1a;
+      border: 2px solid #ff4d4d;
+      border-radius: 16px;
+      padding: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #ff4d4d;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+    }
+
+    .signal-box {
+      background: #1a1a1a;
+      border: 2px solid #ff4d4d;
+      font-size: 18px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 18px;
+      box-shadow: 0 0 8px rgba(255, 77, 77, 0.4);
+      color: #ff6666;
+    }
+
+    .timer {
+      font-size: 15px;
+      color: #ff4d4d;
+      font-weight: bold;
+      margin-top: 10px;
+      text-shadow: 0 0 3px red;
+    }
+
+    .history {
+      max-height: 300px;
+      overflow-y: auto;
+      background: #0d0d0d;
+      border: 1px solid #ff4d4d;
+      padding: 12px;
+      border-radius: 12px;
       width: 100%;
     }
-    input {
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #ff6666;
-      font-size: 16px;
-      text-align: center;
-      background: #1a1a1a;
-      color: #ff4d4d;
-      outline: none;
-    }
-    button {
-      padding: 14px;
-      background-color: #ff1a1a;
-      color: #fff;
-      font-weight: bold;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 0 10px red;
-    }
-    button:hover {
-      background-color: #e60000;
-    }
-    .hidden {
-      display: none;
-    }
-    .btn-group {
+
+    .history-grid {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 8px;
     }
-    .key-list {
-      margin-top: 10px;
+
+    .history-item {
+      font-size: 16px;
+      color: #ff4d4d;
+      font-weight: bold;
       text-align: left;
-      font-size: 15px;
-    }
-    .key-list div {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px;
-      background: #1a1a1a;
-      margin-bottom: 5px;
-      border-radius: 8px;
-      color: #fff;
-    }
-    .key-list button {
-      padding: 4px 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      background: #ff3333;
+      border-bottom: 1px dashed #ff6666;
+      padding-bottom: 4px;
     }
   </style>
 </head>
 <body>
 
-<div class="container" id="login-container">
-  <h1>🔐 RAVI VIP LOGIN</h1>
-  <div class="login-box">
-    <input type="password" id="userKey" placeholder="Enter Your Key" />
-    <div class="btn-group">
-      <button onclick="verifyKey()">LOGIN</button>
-      <button onclick="showAdminPanel()">Admin Panel</button>
-    </div>
+  <!-- LOGIN BOX -->
+  <div class="box" id="loginBox">
+    <h2>Login</h2>
+    <input type="text" id="loginKey" placeholder="Enter Access Key" />
+    <button onclick="login()">Login</button>
+    <button onclick="showAdmin()">Admin Panel</button>
   </div>
-</div>
 
-<!-- 🔮 RAVI PREDICTOR DASHBOARD -->
-<div class="container hidden" id="dashboard">
-  <h1>🎯 RAVI VIP DASHBOARD</h1>
-  <iframe srcdoc="<!DOCTYPE html>
-  <html><head><style>body{margin:0;background:black;color:white;text-align:center;padding:30px;font-size:20px}</style></head><body>
-  🔥 Welcome to RAVI VIP PREDICTOR 🔥<br>Prediction logic & UI will load here after login.
-  </body></html>" width="100%" height="500px" style="border:none;"></iframe>
-</div>
-
-<!-- 🛠 ADMIN PANEL -->
-<div class="container hidden" id="admin-panel">
-  <h1>🛠 ADMIN PANEL</h1>
-  <div class="admin-box" id="admin-auth">
+  <!-- ADMIN PANEL -->
+  <div class="box" id="adminPanel">
+    <h2>Admin Panel</h2>
     <input type="password" id="adminPass" placeholder="Enter Admin Password" />
-    <button onclick="verifyAdmin()">Submit</button>
-  </div>
-  <div class="admin-box hidden" id="key-generator">
-    <input type="text" id="newKey" placeholder="Create New Key" />
-    <button onclick="createKey()">Generate Key</button>
-    <div style="margin-top:15px;">
-      <b>Total Keys:</b> <span id="totalKeys">0</span> |
-      <b>Used Keys:</b> <span id="usedKeys">0</span>
+    <button onclick="checkAdmin()">Enter</button>
+    <div id="adminControls">
+      <input type="text" id="newKey" placeholder="Create New Key" />
+      <button onclick="createKey()">Create Key</button>
+      <h4>Total Keys: <span id="totalKeys">0</span></h4>
+      <h4>Used Keys: <span id="usedKeys">0</span></h4>
+      <div id="keyList"></div>
     </div>
-    <div class="key-list" id="keyList"></div>
   </div>
-</div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <!-- DASHBOARD (Your Predictor) -->
+  <div class="container" id="predictorContainer" style="display:none">
+    <h1>🔥 RAVI VIP PREDICTOR 🔥</h1>
+    <div class="signal-box" id="signalBox">Period: -- <br> Signal: --</div>
+    <div class="top-boxes">
+      <div class="square-box" id="box1">--</div>
+      <div class="square-box" id="box2">--</div>
+    </div>
+    <div class="timer" id="countdown">⏳ Next update in: --s</div>
+  </div>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCma8kN6PKP2aup_5-5ApbI7h1zIDErKzs",
-    authDomain: "ravi-vip-systm.firebaseapp.com",
-    databaseURL: "https://ravi-vip-systm-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "ravi-vip-systm",
-    storageBucket: "ravi-vip-systm.appspot.com",
-    messagingSenderId: "710011250877",
-    appId: "1:710011250877:web:08274d5638e567c0082fd4"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+  <div class="container" id="historyContainer" style="display:none">
+    <h2>📜 Prediction History</h2>
+    <div class="history">
+      <div class="history-grid" id="historyList"></div>
+    </div>
+  </div>
 
-  async function verifyKey() {
-    const key = document.getElementById("userKey").value.trim();
-    if (!key) return alert("Enter your key");
-    const snapshot = await db.ref("keys/" + key).once("value");
-    if (!snapshot.exists()) return alert("❌ Invalid Key");
+  <!-- FIREBASE + PREDICTION SCRIPT -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAx-Z3dcgh8ScVC0vyoTf2vYhe4hLP2em4",
+      authDomain: "ravi-vip-systm.firebaseapp.com",
+      databaseURL: "https://ravi-vip-systm-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ravi-vip-systm",
+      storageBucket: "ravi-vip-systm.appspot.com",
+      messagingSenderId: "145205382964",
+      appId: "1:145205382964:web:41bdf2bb7bbd198eb4e8a1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    const data = snapshot.val();
-    const currentDevice = navigator.userAgent;
+    function login() {
+      const key = document.getElementById("loginKey").value.trim();
+      if (!key) return alert("Enter key");
+      const currentDevice = navigator.userAgent;
 
-    if (data.device && data.device !== currentDevice) {
-      alert("❌ This key is already used on another device!");
-    } else {
-      await db.ref("keys/" + key).update({ device: currentDevice });
-      document.getElementById("login-container").classList.add("hidden");
-      document.getElementById("dashboard").classList.remove("hidden");
+      db.ref("keys/" + key).once("value", snap => {
+        if (snap.exists()) {
+          const data = snap.val();
+          if (!data.device || data.device === currentDevice) {
+            db.ref("keys/" + key).update({ used: true, device: currentDevice });
+            document.getElementById("loginBox").style.display = "none";
+            document.getElementById("predictorContainer").style.display = "block";
+            document.getElementById("historyContainer").style.display = "block";
+            startPredictor();
+          } else {
+            alert("Key already used on another device");
+          }
+        } else {
+          alert("Invalid Key");
+        }
+      });
     }
-  }
 
-  function showAdminPanel() {
-    document.getElementById("login-container").classList.add("hidden");
-    document.getElementById("admin-panel").classList.remove("hidden");
-  }
-
-  function verifyAdmin() {
-    const pass = document.getElementById("adminPass").value;
-    if (pass === "ravi-bhai95") {
-      document.getElementById("admin-auth").classList.add("hidden");
-      document.getElementById("key-generator").classList.remove("hidden");
-      loadKeys();
-    } else {
-      alert("Wrong password!");
+    function showAdmin() {
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("adminPanel").style.display = "block";
     }
-  }
 
-  function createKey() {
-    const key = document.getElementById("newKey").value.trim();
-    if (!key) return alert("Enter a key to create");
-    db.ref("keys/" + key).set({ device: "" });
-    alert("✅ Key created!");
-    document.getElementById("newKey").value = "";
-    loadKeys();
-  }
-
-  function deleteKey(key) {
-    if (confirm("Delete key: " + key + "?")) {
-      db.ref("keys/" + key).remove();
-      loadKeys();
+    function checkAdmin() {
+      const pass = document.getElementById("adminPass").value;
+      if (pass === "raviadmin@123") {
+        document.getElementById("adminControls").style.display = "block";
+        loadKeys();
+      } else {
+        alert("Wrong Password");
+      }
     }
-  }
 
-  function loadKeys() {
-    db.ref("keys").once("value", (snapshot) => {
-      const data = snapshot.val() || {};
-      const keyList = document.getElementById("keyList");
-      keyList.innerHTML = "";
+    function createKey() {
+      const newKey = document.getElementById("newKey").value.trim();
+      if (!newKey) return alert("Enter key name");
+      db.ref("keys/" + newKey).set({ used: false, device: "" }, () => {
+        alert("Key created");
+        loadKeys();
+      });
+    }
 
-      let total = 0, used = 0;
-      for (let key in data) {
-        total++;
-        if (data[key].device) used++;
+    function deleteKey(key) {
+      db.ref("keys/" + key).remove(() => {
+        alert("Deleted");
+        loadKeys();
+      });
+    }
 
-        const row = document.createElement("div");
-        row.innerHTML = `
-          <span><b>${key}</b> ${data[key].device ? "(Used)" : "(Unused)"}</span>
-          <button onclick="deleteKey('${key}')">Delete</button>
-        `;
-        keyList.appendChild(row);
+    function loadKeys() {
+      db.ref("keys").once("value", snap => {
+        const data = snap.val() || {};
+        const list = document.getElementById("keyList");
+        list.innerHTML = "";
+        let total = 0, used = 0;
+        for (let k in data) {
+          total++;
+          if (data[k].used) used++;
+          list.innerHTML += `
+            <div class="keyItem">
+              <span>${k} ${data[k].used ? "✅" : "❌"}</span>
+              <button onclick="deleteKey('${k}')">🗑️</button>
+            </div>`;
+        }
+        document.getElementById("totalKeys").innerText = total;
+        document.getElementById("usedKeys").innerText = used;
+      });
+    }
+
+    // Predictor Logic
+    let lastPeriod = null;
+    let lastSignal = null;
+    let winStreak = 0;
+    let lossRecovery = false;
+    let lastUpdateTime = Date.now();
+
+    async function fetchPeriod() {
+      try {
+        const res = await fetch('https://api.bdg88zf.com/api/webapi/GetGameIssue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            typeId: 1,
+            language: 0,
+            random: "40079dcba93a48769c6ee9d4d4fae23f",
+            signature: "D12108C4F57C549D82B23A91E0FA20AE",
+            timestamp: Math.floor(Date.now() / 1000)
+          })
+        });
+        const data = await res.json();
+        return data?.data?.issueNumber || 'Unknown';
+      } catch {
+        return 'Error';
+      }
+    }
+
+    function getSmartNumbers(signal) {
+      const small = getRandomFromRange(0, 4);
+      const big = getRandomFromRange(5, 9);
+      return signal === "Big" ? [small, big] : [big, small];
+    }
+
+    function getRandomFromRange(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function addToHistory(period, signal, n1, n2) {
+      const list = document.getElementById("historyList");
+      const item = document.createElement("div");
+      item.className = "history-item";
+      item.textContent = `#${period} • ${signal} → ${n1}, ${n2}`;
+      list.prepend(item);
+    }
+
+    async function updatePrediction() {
+      const currentPeriod = await fetchPeriod();
+      if (currentPeriod === 'Error' || currentPeriod === lastPeriod) return;
+
+      lastPeriod = currentPeriod;
+      lastUpdateTime = Date.now();
+
+      let signal;
+      if (lossRecovery) {
+        signal = lastSignal === "Big" ? "Small" : "Big";
+        lossRecovery = false;
+        winStreak = 1;
+      } else if (winStreak >= getRandomFromRange(10, 15)) {
+        signal = lastSignal === "Big" ? "Small" : "Big";
+        lossRecovery = true;
+        winStreak = 0;
+      } else {
+        signal = Math.random() > 0.5 ? "Big" : "Small";
+        winStreak++;
       }
 
-      document.getElementById("totalKeys").textContent = total;
-      document.getElementById("usedKeys").textContent = used;
-    });
-  }
-</script>
+      lastSignal = signal;
 
+      const [num1, num2] = getSmartNumbers(signal);
+      document.getElementById("box1").textContent = num1;
+      document.getElementById("box2").textContent = num2;
+      document.getElementById("signalBox").innerHTML = `Period: ${currentPeriod} <br> Signal: ${signal}`;
+      addToHistory(currentPeriod, signal, num1, num2);
+    }
+
+    function updateTimer() {
+      const elapsed = Math.floor((Date.now() - lastUpdateTime) / 1000);
+      const remaining = 60 - (elapsed % 60);
+      document.getElementById("countdown").innerText = `⏳ Next update in: ${remaining}s`;
+    }
+
+    function startPredictor() {
+      updatePrediction();
+      setInterval(updatePrediction, 5000);
+      setInterval(updateTimer, 1000);
+    }
+  </script>
 </body>
-</html>
+      </html>

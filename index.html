@@ -4,362 +4,640 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🔥 RAVI VIP SYSTEM 🔥</title>
+
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #000000;
-      color: #ff4d4d;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
+    /* ====== GLOBAL (original login/admin styles) ====== */
+    :root{
+      --bg1: #fffbe6;
+      --bg2: #fff7d6;
+      --accent: #b68b00;
+      --muted: #2b2b2b;
+      --glass: rgba(255,255,255,0.6);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family: 'Segoe UI', Roboto, sans-serif;background: linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--muted);-webkit-font-smoothing:antialiased;}
+
+    /* ====== CENTERED LAYOUT ====== */
+    .page {
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
     }
 
-    .box {
-      background: #111;
-      padding: 25px;
-      border-radius: 12px;
-      border: 2px solid #ff4d4d;
-      box-shadow: 0 0 12px rgba(255,77,77,0.4);
-      margin: 10px;
-      width: 100%;
-      max-width: 400px;
+    /* ====== CARD ====== */
+    .card {
+      width:100%;
+      max-width:460px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,240,0.7));
+      border-radius:18px;
+      padding:24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12), 0 2px 6px rgba(182,139,0,0.12) inset;
+      border: 1px solid rgba(182,139,0,0.14);
+      backdrop-filter: blur(6px);
+      position:relative;
+      overflow: hidden;
+    }
+
+    .logo {
+      text-align:center;
+      font-weight:800;
+      color:var(--accent);
+      font-size:20px;
+      letter-spacing:1px;
+      margin-bottom:12px;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.8);
     }
 
     input, button {
-      padding: 12px;
-      width: 100%;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
+      width:100%;
+      padding:12px 14px;
+      margin:8px 0;
+      border-radius:10px;
+      border:1px solid rgba(0,0,0,0.06);
+      font-size:15px;
+      outline:none;
     }
-
+    input { background: rgba(250,250,245,0.85); }
     button {
-      background: #ff4d4d;
-      color: #fff;
-      cursor: pointer;
+      background: linear-gradient(90deg,var(--accent), #ffd24d);
+      color: #2b2b2b;
+      font-weight:700;
+      border:none;
+      cursor:pointer;
+      box-shadow: 0 6px 18px rgba(182,139,0,0.18);
+    }
+    .muted-btn {
+      background:transparent; color:var(--muted); border:1px dashed rgba(0,0,0,0.06); box-shadow:none; font-weight:600;
     }
 
-    #adminPanel, #dashboard, #adminControls {
-      display: none;
+    /* ====== Admin link small ====== */
+    .admin-link { text-align:center; margin-top:8px; font-size:13px; color:var(--muted); cursor:pointer; }
+
+    /* ====== WELCOME OVERLAY ====== */
+    .welcome-overlay {
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: radial-gradient(circle at center, rgba(255,246,200,0.95), rgba(255,236,150,0.95));
+      z-index:9999;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .25s ease;
+    }
+    .welcome-overlay.show { opacity:1; pointer-events:auto; }
+
+    .welcome-card {
+      text-align:center;
+      padding:40px 30px;
+      border-radius:16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+      background: linear-gradient(180deg,#fff9e2,#fff6d8);
+      border: 1px solid rgba(182,139,0,0.18);
+      transform:scale(.96);
+      animation: popIn .6s cubic-bezier(.2,.9,.3,1) forwards;
     }
 
-    .keyItem {
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px solid #ff6666;
-      padding: 5px 0;
+    @keyframes popIn {
+      from { transform: scale(.92); opacity:0; filter:blur(6px); }
+      to { transform: scale(1); opacity:1; filter:blur(0); }
     }
 
-    /* Predictor Styles */
+    .welcome-title {
+      font-size:26px;
+      font-weight:900;
+      color:var(--accent);
+      letter-spacing:1px;
+      margin-bottom:8px;
+      text-shadow: 0 3px 18px rgba(182,139,0,0.2);
+    }
+    .welcome-sub {
+      font-weight:600;
+      color:#5a4a00;
+      margin-bottom:6px;
+    }
+
+    /* animated shimmering underline */
+    .shine {
+      display:inline-block;
+      position:relative;
+      overflow:hidden;
+    }
+    .shine::after {
+      content:'';
+      position:absolute;
+      left:-100%;
+      top:0;
+      height:100%;
+      width:140%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-20deg);
+      animation: shslide 2.2s linear infinite;
+      opacity:.9;
+    }
+    @keyframes shslide {
+      to { left:100%; }
+    }
+
+    /* ====== DASHBOARD LAYOUT ====== */
+    .app {
+      display:none;
+      width:100%;
+      max-width:980px;
+      margin:20px auto;
+      padding:20px;
+    }
+
+    .topbar {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .brand {
+      font-size:18px;
+      font-weight:800;
+      color:var(--accent);
+    }
+    .stats {
+      display:flex; gap:10px; align-items:center;
+    }
+    .chip {
+      background:rgba(255,255,255,0.9);
+      padding:8px 12px;
+      border-radius:12px;
+      border:1px solid rgba(182,139,0,0.09);
+      font-weight:700;
+    }
+
+    .main-grid {
+      display:grid;
+      grid-template-columns: 1fr 360px;
+      gap:18px;
+      align-items:start;
+    }
+
+    /* Predictor Card (kept but your dashboard CSS will override when shown) */
+    .predictor {
+      padding:20px;
+      border-radius:14px;
+      background: linear-gradient(180deg,#fffdf6,#fff9e6);
+      border:1px solid rgba(182,139,0,0.08);
+      box-shadow: 0 10px 30px rgba(182,139,0,0.06);
+    }
+    .small { font-size:12px; color:#6b5b00; margin-top:10px; text-align:center; }
+
+    /* ====== Add your dashboard's CSS below (kept exactly) ====== */
+  </style>
+
+  <!-- DASHBOARD CSS (your new dark dashboard styles) -->
+  <style>
+    /* Dashboard (user-provided) */
+    body.dashboard-skin { /* only used when app is visible */ }
+    /* We'll keep original body as-is; dashboard styles use scoped selectors */
+    /* Dashboard CSS from user (kept intact) */
+    .dash-root {
+      /* empty wrapper - not required but kept for potential scoping */
+    }
+
+    /* THEME: dark gold dashboard styles */
+    /* These were the exact styles from your dashboard — preserved */
+    body {
+      /* Note: the global body already set, but dashboard selectors below style the dashboard elements directly */
+    }
+
     .container {
-      background: #111;
-      border: 2px solid #ff4d4d;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(255, 77, 77, 0.4);
+      background: rgba(20, 20, 20, 0.85);
+      border: 2px solid #FFD700;
+      border-radius: 18px;
       padding: 25px;
       width: 100%;
       max-width: 420px;
       text-align: center;
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+      backdrop-filter: blur(8px);
       margin-bottom: 20px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    h1, h2 {
-      font-size: 26px;
-      color: #ff4d4d;
+    h1 {
+      font-size: 28px;
+      color: #FFD700;
+      margin-bottom: 15px;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
+    }
+
+    .signal-box {
+      font-size: 18px;
+      padding: 15px;
       margin-bottom: 20px;
-      text-shadow: 0 0 5px red;
+      border-radius: 14px;
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid #FFD700;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+      color: #FFD700;
+      font-weight: bold;
     }
 
     .top-boxes {
       display: flex;
-      gap: 10px;
-      justify-content: space-between;
+      justify-content: center;
+      gap: 20px;
       margin-bottom: 20px;
     }
-
-    .square-box {
-      flex: 1;
-      background: #1a1a1a;
-      border: 2px solid #ff4d4d;
-      border-radius: 16px;
-      padding: 20px;
-      font-size: 22px;
-      font-weight: bold;
-      color: #ff4d4d;
+    .circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #000;
+      border: 2px solid #FFD700;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+      font-size: 28px;
+      font-weight: bold;
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+      animation: glow 2s infinite alternate;
     }
 
-    .signal-box {
-      background: #1a1a1a;
-      border: 2px solid #ff4d4d;
-      font-size: 18px;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 18px;
-      box-shadow: 0 0 8px rgba(255, 77, 77, 0.4);
-      color: #ff6666;
+    @keyframes glow {
+      from { box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+      to { box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); }
     }
 
     .timer {
-      font-size: 15px;
-      color: #ff4d4d;
+      font-size: 16px;
+      color: #fff;
       font-weight: bold;
-      margin-top: 10px;
-      text-shadow: 0 0 3px red;
+      text-shadow: 0 0 5px #FFD700;
     }
 
+    h2 {
+      font-size: 22px;
+      color: #FFD700;
+      margin-bottom: 12px;
+    }
     .history {
       max-height: 300px;
       overflow-y: auto;
-      background: #0d0d0d;
-      border: 1px solid #ff4d4d;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #FFD700;
       padding: 12px;
       border-radius: 12px;
       width: 100%;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+      margin-left: auto;
+      margin-right: auto;
     }
-
-    .history-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
     .history-item {
-      font-size: 16px;
-      color: #ff4d4d;
+      font-size: 15px;
+      color: #fff;
       font-weight: bold;
-      text-align: left;
-      border-bottom: 1px dashed #ff6666;
-      padding-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px dashed rgba(255, 215, 0, 0.3);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      background: #FFD700;
+      border-radius: 50%;
+    }
+
+    .history::-webkit-scrollbar { width: 6px; }
+    .history::-webkit-scrollbar-thumb {
+      background: #FFD700;
+      border-radius: 4px;
+    }
+
+    /* small responsive */
+    @media (max-width:960px){
+      .container{max-width:92%}
+      .history{max-height:220px}
     }
   </style>
 </head>
 <body>
 
-  <!-- LOGIN BOX -->
-  <div class="box" id="loginBox">
-    <h2>Login</h2>
-    <input type="text" id="loginKey" placeholder="Enter Access Key" />
-    <button onclick="login()">Login</button>
-    <button onclick="showAdmin()">Admin Panel</button>
-  </div>
-
-  <!-- ADMIN PANEL -->
-  <div class="box" id="adminPanel">
-    <h2>Admin Panel</h2>
-    <input type="password" id="adminPass" placeholder="Enter Admin Password" />
-    <button onclick="checkAdmin()">Enter</button>
-    <div id="adminControls">
-      <input type="text" id="newKey" placeholder="Create New Key" />
-      <button onclick="createKey()">Create Key</button>
-      <h4>Total Keys: <span id="totalKeys">0</span></h4>
-      <h4>Used Keys: <span id="usedKeys">0</span></h4>
-      <div id="keyList"></div>
+  <!-- WELCOME OVERLAY (hidden by default) -->
+  <div id="welcomeOverlay" class="welcome-overlay">
+    <div class="welcome-card">
+      <div class="welcome-title shine">WELCOME TO RAVI VIP PREDICTOR</div>
+      <div class="welcome-sub">Premium Access Granted</div>
+      <div style="margin-top:14px;font-weight:700;color:#6a5600">Preparing dashboard...</div>
     </div>
   </div>
 
-  <!-- DASHBOARD (Your Predictor) -->
-  <div class="container" id="predictorContainer" style="display:none">
-    <h1>🔥 RAVI VIP PREDICTOR 🔥</h1>
-    <div class="signal-box" id="signalBox">Period: -- <br> Signal: --</div>
-    <div class="top-boxes">
-      <div class="square-box" id="box1">--</div>
-      <div class="square-box" id="box2">--</div>
-    </div>
-    <div class="timer" id="countdown">⏳ Next update in: --s</div>
-  </div>
-
-  <div class="container" id="historyContainer" style="display:none">
-    <h2>📜 Prediction History</h2>
-    <div class="history">
-      <div class="history-grid" id="historyList"></div>
+  <!-- LOGIN PAGE -->
+  <div id="loginPage" class="page">
+    <div class="card" role="dialog" aria-labelledby="login-title">
+      <div class="logo">🔥 RAVI VIP SYSTEM 🔥</div>
+      <h3 id="login-title" style="margin:6px 0 10px;color:var(--muted)">Enter your Access Key</h3>
+      <input id="loginKey" placeholder="Enter Access Key" autocomplete="off" />
+      <button onclick="login()" id="loginBtn">Login</button>
+      <button class="muted-btn" onclick="showAdmin()" id="adminBtn">Admin Panel</button>
+      <div class="admin-link" onclick="toggleHints()">Need help? Click here</div>
+      <div id="helpText" style="display:none;text-align:center;margin-top:8px;font-size:13px;color:#6b5b00">
+        Use your provided key. One device per key enforced.
+      </div>
     </div>
   </div>
 
-  <!-- FIREBASE + PREDICTION SCRIPT -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAx-Z3dcgh8ScVC0vyoTf2vYhe4hLP2em4",
-      authDomain: "ravi-vip-systm.firebaseapp.com",
-      databaseURL: "https://ravi-vip-systm-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "ravi-vip-systm",
-      storageBucket: "ravi-vip-systm.appspot.com",
-      messagingSenderId: "145205382964",
-      appId: "1:145205382964:web:41bdf2bb7bbd198eb4e8a1"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  <!-- ADMIN PANEL (hidden initially) -->
+  <div id="adminPanel" class="page" style="display:none;">
+    <div class="card">
+      <div class="logo">Admin Panel</div>
+      <input id="adminPass" type="password" placeholder="Enter Admin Password" />
+      <button onclick="checkAdmin()">Enter</button>
+      <div id="adminControls" style="display:none;margin-top:12px;">
+        <input id="newKey" placeholder="Create New Key (name/id)" />
+        <div style="display:flex;gap:8px;">
+          <button onclick="createKey()">Create Key</button>
+          <button onclick="loadKeys()" class="muted-btn">Reload Keys</button>
+        </div>
+        <h4 style="margin:10px 0 6px;">Total Keys: <span id="totalKeys">0</span> | Used Keys: <span id="usedKeys">0</span></h4>
+        <div id="keyList" style="max-height:260px;overflow:auto;border-radius:8px;padding:6px;"></div>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button onclick="backToLogin()" class="muted-btn">Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    function login() {
-      const key = document.getElementById("loginKey").value.trim();
-      if (!key) return alert("Enter key");
-      const currentDevice = navigator.userAgent;
+  <!-- APP / DASHBOARD (REPLACED with your new dashboard) -->
+  <div id="appRoot" class="app" style="display:none;">
 
-      db.ref("keys/" + key).once("value", snap => {
-        if (snap.exists()) {
-          const data = snap.val();
-          if (!data.device || data.device === currentDevice) {
-            db.ref("keys/" + key).update({ used: true, device: currentDevice });
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("predictorContainer").style.display = "block";
-            document.getElementById("historyContainer").style.display = "block";
-            startPredictor();
-          } else {
-            alert("Key already used on another device");
-          }
+    <!-- === START: YOUR PROVIDED DASHBOARD HTML === -->
+    <div class="container" id="dashTop">
+      <h1>⚡ RAVI VIP PREDICTOR ⚡</h1>
+      <div class="signal-box" id="signalBox">Period: -- <br> Signal: --</div>
+      <div class="top-boxes">
+        <div class="circle" id="box1">--</div>
+        <div class="circle" id="box2">--</div>
+      </div>
+      <div class="timer" id="countdown">⏳ Next update in: --s</div>
+    </div>
+
+    <div class="container" id="dashHistory">
+      <h2>📜 Prediction History</h2>
+      <div class="history" id="historyList"></div>
+    </div>
+    <!-- === END: YOUR PROVIDED DASHBOARD HTML === -->
+
+  </div>
+
+<script>
+  // ====== Firebase config (kept as provided) ======
+  const firebaseConfig = {
+    apiKey: "AIzaSyAx-Z3dcgh8ScVC0vyoTf2vYhe4hLP2em4",
+    authDomain: "ravi-vip-systm.firebaseapp.com",
+    databaseURL: "https://ravi-vip-systm-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "ravi-vip-systm",
+    storageBucket: "ravi-vip-systm.appspot.com",
+    messagingSenderId: "145205382964",
+    appId: "1:145205382964:web:41bdf2bb7bbd198eb4e8a1"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // UI helpers
+  const loginPage = document.getElementById('loginPage');
+  const adminPanelPage = document.getElementById('adminPanel');
+  const appRoot = document.getElementById('appRoot');
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  const helpText = document.getElementById('helpText');
+
+  function toggleHints(){ helpText.style.display = helpText.style.display === 'none' ? 'block' : 'none'; }
+
+  // Admin functions
+  function showAdmin(){
+    loginPage.style.display = 'none';
+    adminPanelPage.style.display = 'flex';
+  }
+  function backToLogin(){
+    adminPanelPage.style.display = 'none';
+    loginPage.style.display = 'flex';
+  }
+  function checkAdmin(){
+    const pass = document.getElementById('adminPass').value;
+    if(pass === "raviadmin@123"){
+      document.getElementById('adminControls').style.display = 'block';
+      loadKeys();
+    } else alert("Wrong Password");
+  }
+  function createKey(){
+    const newKey = document.getElementById('newKey').value.trim();
+    if(!newKey) return alert("Enter key name");
+    db.ref("keys/" + newKey).set({ used: false, device: "" }, () => {
+      alert("Key created");
+      document.getElementById('newKey').value = '';
+      loadKeys();
+    });
+  }
+  function deleteKey(key){
+    if(!confirm("Delete key "+key+" ?")) return;
+    db.ref("keys/" + key).remove(() => {
+      loadKeys();
+    });
+  }
+  function loadKeys(){
+    db.ref("keys").once("value", snap => {
+      const data = snap.val() || {};
+      const list = document.getElementById('keyList');
+      list.innerHTML = "";
+      let total=0, used=0;
+      for(let k in data){ total++; if(data[k].used) used++;
+        const dev = data[k].device ? ` (${data[k].device.slice(0,24)}...)` : '';
+        list.innerHTML += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid rgba(0,0,0,0.03)">
+          <div style="font-weight:800">${k} ${data[k].used ? "✅" : "❌"}${dev}</div>
+          <div><button onclick="deleteKey('${k}')">🗑️</button></div>
+        </div>`;
+      }
+      document.getElementById('totalKeys').innerText = total;
+      document.getElementById('usedKeys').innerText = used;
+    });
+  }
+
+  // Login flow
+  function login(){
+    const key = document.getElementById('loginKey').value.trim();
+    if(!key) return alert("Enter key");
+    const currentDevice = navigator.userAgent;
+    db.ref("keys/" + key).once("value", snap => {
+      if(snap.exists()){
+        const data = snap.val();
+        if(!data.device || data.device === currentDevice){
+          // mark used and set device
+          db.ref("keys/" + key).update({ used: true, device: currentDevice }, () => {
+            // show welcome overlay then open app
+            showWelcomeThenApp();
+          });
         } else {
-          alert("Invalid Key");
+          alert("Key already used on another device");
         }
-      });
-    }
-
-    function showAdmin() {
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("adminPanel").style.display = "block";
-    }
-
-    function checkAdmin() {
-      const pass = document.getElementById("adminPass").value;
-      if (pass === "raviadmin@123") {
-        document.getElementById("adminControls").style.display = "block";
-        loadKeys();
       } else {
-        alert("Wrong Password");
+        alert("Invalid Key");
       }
-    }
+    }, err => {
+      alert("DB error: " + err);
+    });
+  }
 
-    function createKey() {
-      const newKey = document.getElementById("newKey").value.trim();
-      if (!newKey) return alert("Enter key name");
-      db.ref("keys/" + newKey).set({ used: false, device: "" }, () => {
-        alert("Key created");
-        loadKeys();
+  function showWelcomeThenApp(){
+    welcomeOverlay.classList.add('show');
+    // short 2.2s animation then open main UI
+    setTimeout(()=> {
+      welcomeOverlay.classList.remove('show');
+      openApp();
+    }, 2200);
+  }
+
+  function logout(){
+    // simple logout: reload to start
+    location.reload();
+  }
+
+  // Start predictor flow after login
+  function openApp(){
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'none';
+    appRoot.style.display = 'block';
+    // call user's dashboard startPredictor (defined below)
+    try { if(typeof startPredictor === 'function') startPredictor(); } catch(e){}
+  }
+
+  // Expose logout to window so HTML button can use it
+  window.logout = logout;
+
+  // Extra: small keyboard enter binding for login
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') {
+      // if login page visible -> login; if admin panel visible -> check admin
+      if(document.getElementById('loginPage').style.display !== 'none') login();
+      else if(document.getElementById('adminPanel').style.display !== 'none') checkAdmin();
+    }
+  });
+
+  // For graceful page load, prefetch a period once (so UI not empty)
+  (async ()=>{ await fetch('https://api.bdg88zf.com/api/webapi/GetGameIssue',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({typeId:1,language:0,random:(Math.random()+ '').slice(2,18),signature:"D12108C4F57C549D82B23A91E0FA20AE",timestamp:Math.floor(Date.now()/1000)})}).catch(()=>null); })();
+
+</script>
+
+<!-- ====== DASHBOARD JS (exactly your script, except auto-start removed) ====== -->
+<script>
+  // Dashboard script (kept from your provided code)
+  let lastPeriod = null;
+  let lastSignal = null;
+  let winStreak = 0;
+  let lossRecovery = false;
+  let lastUpdateTime = Date.now();
+
+  async function fetchPeriod() {
+    try {
+      const res = await fetch('https://api.bdg88zf.com/api/webapi/GetGameIssue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          typeId: 1,
+          language: 0,
+          random: "40079dcba93a48769c6ee9d4d4fae23f",
+          signature: "D12108C4F57C549D82B23A91E0FA20AE",
+          timestamp: Math.floor(Date.now() / 1000)
+        })
       });
+      const data = await res.json();
+      return data?.data?.issueNumber || 'Unknown';
+    } catch {
+      return 'Error';
+    }
+  }
+
+  function getSmartNumbers(signal) {
+    const small = getRandomFromRange(0, 4);
+    const big = getRandomFromRange(5, 9);
+    return signal === "Big" ? [small, big] : [big, small];
+  }
+
+  function getRandomFromRange(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function addToHistory(period, signal, n1, n2) {
+    const list = document.getElementById("historyList");
+    const item = document.createElement("div");
+    item.className = "history-item";
+    item.innerHTML = `<div class="dot"></div> #${period} • <span style="color:#FFD700">${signal}</span> → ${n1}, ${n2}`;
+    list.prepend(item);
+    while (list.children.length > 120) list.removeChild(list.lastChild);
+  }
+
+  async function updatePrediction() {
+    const currentPeriod = await fetchPeriod();
+    if (currentPeriod === 'Error' || currentPeriod === lastPeriod) return;
+
+    lastPeriod = currentPeriod;
+    lastUpdateTime = Date.now();
+
+    let signal;
+    if (lossRecovery) {
+      signal = lastSignal === "Big" ? "Small" : "Big";
+      lossRecovery = false;
+      winStreak = 1;
+    } else if (winStreak >= getRandomFromRange(10, 15)) {
+      signal = lastSignal === "Big" ? "Small" : "Big";
+      lossRecovery = true;
+      winStreak = 0;
+    } else {
+      signal = Math.random() > 0.5 ? "Big" : "Small";
+      winStreak++;
     }
 
-    function deleteKey(key) {
-      db.ref("keys/" + key).remove(() => {
-        alert("Deleted");
-        loadKeys();
-      });
-    }
+    lastSignal = signal;
 
-    function loadKeys() {
-      db.ref("keys").once("value", snap => {
-        const data = snap.val() || {};
-        const list = document.getElementById("keyList");
-        list.innerHTML = "";
-        let total = 0, used = 0;
-        for (let k in data) {
-          total++;
-          if (data[k].used) used++;
-          list.innerHTML += `
-            <div class="keyItem">
-              <span>${k} ${data[k].used ? "✅" : "❌"}</span>
-              <button onclick="deleteKey('${k}')">🗑️</button>
-            </div>`;
-        }
-        document.getElementById("totalKeys").innerText = total;
-        document.getElementById("usedKeys").innerText = used;
-      });
-    }
+    const [num1, num2] = getSmartNumbers(signal);
+    document.getElementById("box1").textContent = num1;
+    document.getElementById("box2").textContent = num2;
+    document.getElementById("signalBox").innerHTML = `Period: ${currentPeriod} <br> Signal: ${signal}`;
+    addToHistory(currentPeriod, signal, num1, num2);
 
-    // Predictor Logic
-    let lastPeriod = null;
-    let lastSignal = null;
-    let winStreak = 0;
-    let lossRecovery = false;
-    let lastUpdateTime = Date.now();
+    // Optionally store in Firebase (kept out to avoid duplicates)
+    try {
+      // db.ref('history/' + Date.now()).set({ period: currentPeriod, signal, num1, num2 });
+    } catch(e){}
+  }
 
-    async function fetchPeriod() {
-      try {
-        const res = await fetch('https://api.bdg88zf.com/api/webapi/GetGameIssue', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            typeId: 1,
-            language: 0,
-            random: "40079dcba93a48769c6ee9d4d4fae23f",
-            signature: "D12108C4F57C549D82B23A91E0FA20AE",
-            timestamp: Math.floor(Date.now() / 1000)
-          })
-        });
-        const data = await res.json();
-        return data?.data?.issueNumber || 'Unknown';
-      } catch {
-        return 'Error';
-      }
-    }
+  function updateTimer() {
+    const elapsed = Math.floor((Date.now() - lastUpdateTime) / 1000);
+    const remaining = 60 - (elapsed % 60);
+    const el = document.getElementById("countdown");
+    if(el) el.innerText = `⏳ Next update in: ${remaining}s`;
+  }
 
-    function getSmartNumbers(signal) {
-      const small = getRandomFromRange(0, 4);
-      const big = getRandomFromRange(5, 9);
-      return signal === "Big" ? [small, big] : [big, small];
-    }
+  // startPredictor will be called from openApp() after successful login
+  let predictionInterval = null;
+  function startPredictor(){
+    updatePrediction();
+    if(predictionInterval) clearInterval(predictionInterval);
+    predictionInterval = setInterval(updatePrediction, 5000);
+    setInterval(updateTimer, 1000);
+  }
 
-    function getRandomFromRange(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
+  // NOTE: removed automatic call to startPredictor() here so dashboard waits for login.
+  // If you want to test dashboard standalone, temporarily call startPredictor() in console.
+</script>
 
-    function addToHistory(period, signal, n1, n2) {
-      const list = document.getElementById("historyList");
-      const item = document.createElement("div");
-      item.className = "history-item";
-      item.textContent = `#${period} • ${signal} → ${n1}, ${n2}`;
-      list.prepend(item);
-    }
-
-    async function updatePrediction() {
-      const currentPeriod = await fetchPeriod();
-      if (currentPeriod === 'Error' || currentPeriod === lastPeriod) return;
-
-      lastPeriod = currentPeriod;
-      lastUpdateTime = Date.now();
-
-      let signal;
-      if (lossRecovery) {
-        signal = lastSignal === "Big" ? "Small" : "Big";
-        lossRecovery = false;
-        winStreak = 1;
-      } else if (winStreak >= getRandomFromRange(10, 15)) {
-        signal = lastSignal === "Big" ? "Small" : "Big";
-        lossRecovery = true;
-        winStreak = 0;
-      } else {
-        signal = Math.random() > 0.5 ? "Big" : "Small";
-        winStreak++;
-      }
-
-      lastSignal = signal;
-
-      const [num1, num2] = getSmartNumbers(signal);
-      document.getElementById("box1").textContent = num1;
-      document.getElementById("box2").textContent = num2;
-      document.getElementById("signalBox").innerHTML = `Period: ${currentPeriod} <br> Signal: ${signal}`;
-      addToHistory(currentPeriod, signal, num1, num2);
-    }
-
-    function updateTimer() {
-      const elapsed = Math.floor((Date.now() - lastUpdateTime) / 1000);
-      const remaining = 60 - (elapsed % 60);
-      document.getElementById("countdown").innerText = `⏳ Next update in: ${remaining}s`;
-    }
-
-    function startPredictor() {
-      updatePrediction();
-      setInterval(updatePrediction, 5000);
-      setInterval(updateTimer, 1000);
-    }
-  </script>
 </body>
-      </html>
+  </html>
